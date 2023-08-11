@@ -1,118 +1,287 @@
-import Image from 'next/image'
 import { Inter } from 'next/font/google'
+import { useEffect, useState } from "react"
+import Loading from "../components/Loading"
+import useSound from 'use-sound'
+import axios from 'axios'
+import useUser from '../../useUser'
+import Button from '@/components/Button'
+import { useRouter } from 'next/navigation'
+import supabase from '../../supabase'
+import { toast } from 'react-hot-toast'
+import HistoryItem from '@/components/HistoryItem'
+
+const { Configuration, OpenAIApi } = require("openai")
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+
+  const { user } = useUser()
+  const router = useRouter()
+
+  const configuration = new Configuration({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+  })
+
+  const loadingSFx = './loading-bgm.mp3'
+
+  const [currentSound, setCurrentSound] = useState(null)
+  const [audio, setAudio] = useState(null)
+
+  const [play, { stop }] = useSound(loadingSFx,{interrupt: true, loop: true})
+
+  const openai = new OpenAIApi(configuration)
+  
+  const [prompt, setPrompt] = useState("");
+  const [response, setResponse] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [bgUrl, setBgUrl] = useState(null)
+
+  const [showHistory, setShowHistory] = useState(false)
+  const [history, setHistory] = useState([])
+
+  const constructPrompt = () => {
+    return `You are an intelligent and helpful assistant that knows anime and manga stories well. Suggest a motivational message or quote from the anime character of only Naruto Uzumaki or Gaara from Naruto Shippuden for each of my problems. Follow the format provided to respond based on my input. Remember to have the message no longer than 100 words and do not mention the speaker's name in the quote. My problem is: ${prompt}. Do not include any other than the mentioned json format and render output in JSON parsable format.
+            Answer Format:
+            {
+              "quote": "suggested message or quote here",
+              "character": "mention anime character from which message has been generated without anime series title"
+            }`
+  }
+
+  async function fetchPublicUrl(id) {
+    return new Promise((resolve, reject) => {
+      const data = supabase.storage.from('tts').getPublicUrl(id + '.mp3')
+      if (data) {
+        resolve(data)
+      } else {
+        reject('Error Getting Public URL!')
+      }
+    })
+  }
+
+  const handleSubmit = async () => {
+
+    if (!user) return toast.error('Authentication Failed!')
+
+    setLoading(true)
+    play()
+    try {
+
+      const result = await openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: constructPrompt(),
+        temperature: 0.7,
+        max_tokens: 300,
+      })
+      
+      let temp_response = JSON.parse(result.data.choices[0].text.replace('Answer:','').replace(/\n/g,''))
+      setResponse(temp_response)
+
+      const _result = await axios.post(temp_response?.character==='Gaara'?'/api/play-ht-tts-1':'/api/play-ht-tts',{content:temp_response?.quote})
+
+      stop()
+      setCurrentSound(_result?.data?.url)
+      setLoading(false)
+
+      // saving audio to storage
+      const _audio_url = _result?.data?.url
+    
+        const blob = await fetch(_audio_url).then(url => url.blob())
+        await supabase.storage.from('tts').upload(_result?.data?.id+'.mp3', blob)
+        
+        const data = await fetchPublicUrl(_result?.data?.id)
+
+        // get the gif
+        const gifData = await axios.post('/api/get-me-gif',{ q: temp_response?.character==='Gaara'?'Gaara from Naruto':'Naruto Uzumaki' })
+
+        let tempGifs = [temp_response?.character==='Gaara'?'./gaara.gif':'./bg.webp']
+        if (gifData?.data?.url) {
+          tempGifs.push(gifData?.data?.url)
+          setBgUrl(gifData?.data?.url)
+        } 
+
+        let bgURL = tempGifs[Math.floor(Math.random() * tempGifs.length)]
+
+        // saving history to db
+        const { error, data: savedHistory } = await supabase.from('messages').insert({ t_id: _result?.data?.id, user_id: user?.id, quote: temp_response?.quote, character: temp_response?.character, bg_url: bgURL, audio_url: data?.data?.publicUrl, user_problem: prompt })
+
+        if (error) {
+          console.log(error?.message||"History not saved");
+        }
+
+    } catch(e) {
+      console.log(e);
+      stop()
+    } finally {
+      setPrompt('')
+    }
+  }
+
+  async function fetchHistory() {
+    const { error, data } = await supabase.from('messages').select('*').eq('user_id', user?.id)
+    if (error) {
+      toast.error('Failed Fetching history!')
+      return
+    } 
+    setHistory(data)
+  }
+
+  useEffect(() => {
+    if (user){
+      fetchHistory()
+    }
+  },[user])
+
+  const loadData = (data) => {
+
+    setLoading(true)
+    play()
+
+    // setting necessary data
+    setResponse(data?.quote)
+    setCurrentSound(data?.audio_url)
+    setBgUrl(data?.bg_url)
+
+    setTimeout(() => {
+      stop()
+      setLoading(false)
+    }, 5000)
+
+  }
+
+  function clearAndReset() {
+    setResponse(null)
+    setPrompt('')
+    setCurrentSound(null)
+    setBgUrl(null)
+    fetchHistory()
+  }
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <div className="w-full h-screen bg-black bg-cover flex flex-col items-center relative justify-center" style={{ backgroundImage: `${(response&&!loading)?`url(${response.character==='Gaara'?bgUrl||'./gaara.gif':bgUrl||'./bg.webp'})`:''}`, boxShadow: "0px 4px 4px 0px #00000040,inset 0 0 0 1000px rgba(0,0,0,.6)" }}>
+      {
+        user ? (
+          <div className='w-full bg-black text-right flex items-center justify-between top-0 absolute pr-4'>
+            <p onClick={() => router.push('/')} className='cursor-pointer text-slate-200 font-bold px-4 text-md'><span className='w-5 mx-3 h-2 bg-orange-500 rounded-sm px-2'></span>Talk-No Justu Tool</p>
+              <div className='w-auto flex items-center'>
+                <p className='flex items-center text-center text-white text-md py-4 px-2'>
+                  <span className='text-slate-500 text-sm px-2 mt-1'>built for</span>
+                  <img src='./supabase-dark.svg' className='object-contain w-24 mt-1 mr-2' />
+                  <span className='font-light mx-2 text-slate-600'>|</span>{user?.user_metadata?.full_name}
+                </p>
+                <p onClick={async () => {
+                  await supabase.auth.signOut()
+                  router.refresh()
+                }} className='font-medium px-3 mx-1 rounded-md py-1 text-white bg-orange-600 text-sm cursor-pointer'>Log Out</p>
+              </div>
+          </div>
+        ) : (
+          <div className='w-full py-4 absolute top-0 bg-black text-right flex items-center'>
+              <p onClick={() => router.push('/')} className='cursor-pointer text-slate-200 font-bold px-4 text-md'><span className='w-5 mx-3 h-2 bg-orange-500 rounded-sm px-2'></span>Talk-No Justu Tool</p>
+          </div>
+        )
+      }
+      {
+        loading ? (<Loading />)
+        : response ? (
+          <div className="w-full h-full flex flex-col items-center justify-center relative">
+            <div className="w-1/3 mx-auto bg-black rounded-md shadow-xl p-4 text-white font-bold text-center flex flex-col items-center text-lg">
+              <p>{response?.quote||response}</p>
+              <audio ref={e=>setAudio(e)} preload='auto'>
+                <source type="audio/mp3" src={currentSound}></source>
+              </audio>
+              <div className="w-full flex items-center justify-center mt-3">
+                <button onClick={() => {
+                  audio?.play()
+                }}
+                  className="disabled:bg-orange-300 mr-3 disabled:cursor-not-allowed hover:bg-orange-700 w-auto px-2 py-2 font-medium text-white bg-orange-500 rounded-sm mx-2 text-sm"
+                >
+                  Play
+                </button>
+                <button
+                  onClick={() => {
+                    clearAndReset()
+                  }}
+                  className="disabled:bg-orange-300 disabled:cursor-not-allowed hover:bg-orange-700 w-auto px-2 py-2 font-medium text-white bg-orange-500 rounded-sm mx-2 text-sm"
+                >
+                  Try Again!
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className='w-full flex flex-col items-center justify-center relative'>
+            <img 
+              alt='Naruto Uzumaki'
+              src='./naruto-dance.gif'
+              className='object-contain h-56 mb-6'
             />
-          </a>
-        </div>
-      </div>
+            {
+              user && (
+                <div className='w-[25%] absolute top-0 right-10'>
+                  <div onClick={() => setShowHistory(!showHistory)} className='w-full rounded-md p-2 cursor-pointer border-gray-600 border flex items-center'>
+                    <h1 className='flex items-center text-sm text-white cursor-pointer'>
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 mr-2 h-5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                      </svg>
+                      {showHistory?'Hide':'Show'} History ({history?.length})
+                    </h1>
+                  </div>
+                  {
+                    showHistory && (
+                      <div className='border-gray-600 border rounded-md my-2 flex flex-col items-center'>
+                        {history?.length===0&&(<p className='w-full text-slate-400 text-center text-sm py-1'>No History Found</p>)}
+                        {
+                          history?.map(item => (
+                            <HistoryItem item={item} key={item.id} onClick={(e) => loadData(e)} />
+                          ))
+                        }
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+                      </div>
+                    )
+                  }
+                </div>
+              )
+            }
+            {
+              user ? (
+                <div className="w-full flex items-center justify-center">
+                  <input
+                    value={prompt}
+                    onChange={e => setPrompt(e.target.value)}
+                    type='text'
+                    placeholder='Mention your problem here'
+                    className='outline-none focus:outline-orange-500 ring-orange-400 focus:ring-orange-400 w-[35%] bg-white px-4 py-3 text-sm rounded-md border shadow-md text-black'
+                  />
+                  <button
+                    onClick={() => handleSubmit()}
+                    disabled={loading||!prompt}
+                    className="disabled:cursor-not-allowed hover:bg-orange-700 w-auto px-4 py-3 font-medium text-white bg-orange-500 rounded-md mx-2 text-sm"
+                  >
+                    Submit
+                  </button>
+                </div>
+              ) : (
+                <div className="w-[25%] flex items-center justify-center">
+                  <Button
+                    onClick={() => router.push('/login')}
+                    type='small'
+                    label='Log in'
+                  />
+                  <Button
+                    onClick={() => router.push('/signup')}
+                    type='small'
+                    label='Create Account'
+                  />
+                </div>
+              )
+            }
+          </div>
+        )
+      }
+      <p onClick={() => router.push('/howitworks')} className='w-auto text-orange-500 hover:text-orange-700 cursor-pointer text-sm py-4 hover:underline text-center'>See How It Works</p>
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   )
 }
