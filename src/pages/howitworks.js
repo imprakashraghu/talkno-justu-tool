@@ -28,7 +28,7 @@ function HowItWorks() {
 
                 </div>
             ) : (
-                <div className='w-full py-4 bg-black text-right flex items-center'>
+                <div className='w-full py-4 bg-black text-right flex items-center z-20'>
                     <p onClick={() => router.push('/')} className='cursor-pointer text-slate-200 font-bold px-4 text-md'><span className='w-5 mx-3 h-2 bg-orange-500 rounded-sm px-2'></span>Talk-No Justu Tool</p>
                 </div>
             )
