@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 function Loading() {
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center'>
+    <div className='w-full h-full flex flex-col items-center justify-center lg:px-0 px-4'>
         <img
             alt='talk-no-justu'
             src='./loading.gif'

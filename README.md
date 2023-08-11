@@ -23,7 +23,8 @@
 </div>
 
 ## Need to see how it works in detail ?
-<a href="https://talkno-justu.netlify.app">See How it works</a>
+<img src="./public/howitworks.png"/>
+<a href="https://talkno-justu.netlify.app">See More in detail</a>
 
 ## To run the project
 - Fork or download the project from <code>https://github.com/imprakashraghu/talkno-justu-tool</code>

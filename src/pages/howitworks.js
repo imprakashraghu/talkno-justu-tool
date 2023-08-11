@@ -12,7 +12,7 @@ function HowItWorks() {
     <div className="w-full min-h-screen bg-black bg-cover flex flex-col items-center relative justify-center overflow-y-auto">
         {
             user ? (
-                <div className='w-full bg-black text-right flex items-center justify-between top-0 relative pr-4 mb-4'>
+                <div className='w-full bg-black text-right flex flex-col lg:flex-row lg:mt-0 mt-4 items-center justify-between top-0 relative pr-4 mb-4'>
                     <p onClick={() => router.push('/')} className='cursor-pointer text-slate-200 font-bold px-4 text-md'><span className='w-5 mx-3 h-2 bg-orange-500 rounded-sm px-2'></span>Talk-No Justu Tool</p>
                     <div className='w-auto flex items-center'>
                         <p className='flex items-center text-center text-white text-md py-4 px-2'>
@@ -35,30 +35,30 @@ function HowItWorks() {
         }
         <img
             src='./howitworks.png'
-            className='object-contain my-4'
+            className='object-contain my-4 lg:px-0 px-4'
             style={{ maxHeight: 500 }}
         />
-        <div className='w-full px-24 py-10'>
+        <div className='w-full px-4 lg:px-24 py-4 lg:py-10'>
             <h1 className='w-full text-center mb-4 font-medium py-2 text-lg text-slate-200'>
                 How it works! 🤯
             </h1>
-            <p className='w-[70%] mx-auto text-center py-2 text-sm text-slate-400 leading-loose'>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 The (Talk-No Justu Tool) is built using <code>Next JS</code> specially for the <code>Supabase Launch Week 8 Hackathon</code>. The main focus of this tool is to receive any kind of problems aka "mental stress or anything you always wanted to shout at your friend" and process it using <code>Generative AI</code> - <code>Open AI</code> and provides you with a fun filled page of realistic anime voice using <code>Play HT</code> advising you with motivation or message. The thing to notice is due to empty pocket the entire site is running on free and open source resources and thus only two characters namely "Naruto Uzumaki" and "Gaara" are used.
             </p>
             <br/>
-            <p className='w-[70%] mx-auto text-center py-2 text-sm text-slate-400 leading-loose'>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 <code>Supabase Authentication</code> is a great helper here, providing access to authenticate. Here I used, Authentication service to authenticate users and made sure only those you login will be able to access the tool and hear our naurto's no-talk jsutu.
             </p>
-            <p className='w-[70%] mx-auto text-center py-2 text-sm text-slate-400 leading-loose'>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 <code>Supabase Database & Storage</code> is used to save and relive the history and fall into naruto justu. Here all the voice files are stored as objects in supabase buckets and other data related to user like email, full name and motivational messages are stored into their postgresql databases.
             </p>
-            <p className='w-[70%] mx-auto text-center py-2 text-sm text-slate-400 leading-loose'>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 Not to mention, <code>Open AI</code> was a life saver providing me to generate qoutes or messages based on your problems described and character choosing via <code>text-davinci-003</code> mode. I made sure the result would defitely motivate you to atleast laugh 😅.
             </p>
-            <p className='w-[70%] mx-auto text-center py-2 text-sm text-slate-400 leading-loose'>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 Talking about <code>Play HT</code> voice services, I used voice clonig to generate Naruto and Gaara's voice to speak motivation lines for you. Here while intergrating this it really made be stop sleeping as it was really difficult to do it, but everything at the end was worth it.
             </p>
-            <p className='w-[70%] mx-auto text-center py-2 text-sm text-slate-400 leading-loose'>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 <code>GIPHY</code> here, played a small role but a strong one. It generated a random anime character based on the situation and helped to create the current environement via their apis.
             </p>
         </div>

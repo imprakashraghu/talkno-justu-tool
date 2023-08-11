@@ -63,6 +63,7 @@ export default function Home() {
   const handleSubmit = async () => {
 
     if (!user) return toast.error('Authentication Failed!')
+    if (!prompt) return toast.error('Invalid problem!')
 
     setLoading(true)
     play()
@@ -134,6 +135,8 @@ export default function Home() {
   },[user])
 
   const loadData = (data) => {
+    
+    setShowHistory(false)
 
     setLoading(true)
     play()
@@ -159,10 +162,10 @@ export default function Home() {
   }
 
   return (
-    <div className="w-full h-screen bg-black bg-cover flex flex-col items-center relative justify-center" style={{ backgroundImage: `${(response&&!loading)?`url(${response.character==='Gaara'?bgUrl||'./gaara.gif':bgUrl||'./bg.webp'})`:''}`, boxShadow: "0px 4px 4px 0px #00000040,inset 0 0 0 1000px rgba(0,0,0,.6)" }}>
+    <div className="w-full min-h-screen bg-black bg-cover flex flex-col items-center relative justify-center" style={{ backgroundImage: `${(response&&!loading)?`url(${response.character==='Gaara'?bgUrl||'./gaara.gif':bgUrl||'./bg.webp'})`:''}`, boxShadow: "0px 4px 4px 0px #00000040,inset 0 0 0 1000px rgba(0,0,0,.6)" }}>
       {
         user ? (
-          <div className='w-full bg-black text-right flex items-center justify-between top-0 absolute pr-4'>
+          <div className='w-full bg-black text-right flex flex-col lg:flex-row lg:mt-0 mt-4 items-center justify-between top-0 absolute pr-4'>
             <p onClick={() => router.push('/')} className='cursor-pointer text-slate-200 font-bold px-4 text-md'><span className='w-5 mx-3 h-2 bg-orange-500 rounded-sm px-2'></span>Talk-No Justu Tool</p>
               <div className='w-auto flex items-center'>
                 <p className='flex items-center text-center text-white text-md py-4 px-2'>
@@ -186,7 +189,7 @@ export default function Home() {
         loading ? (<Loading />)
         : response ? (
           <div className="w-full h-full flex flex-col items-center justify-center relative">
-            <div className="w-1/3 mx-auto bg-black rounded-md shadow-xl p-4 text-white font-bold text-center flex flex-col items-center text-lg">
+            <div className="w-full lg:w-1/3 mx-auto bg-black rounded-md shadow-xl p-4 text-white font-bold text-center flex flex-col items-center text-lg">
               <p>{response?.quote||response}</p>
               <audio ref={e=>setAudio(e)} preload='auto'>
                 <source type="audio/mp3" src={currentSound}></source>
@@ -219,7 +222,7 @@ export default function Home() {
             />
             {
               user && (
-                <div className='w-[25%] absolute top-0 right-10'>
+                <div className='w-[90%] lg:w-[25%] absolute -bottom-32 bg-black lg:top-0 lg:right-10'>
                   <div onClick={() => setShowHistory(!showHistory)} className='w-full rounded-md p-2 cursor-pointer border-gray-600 border flex items-center'>
                     <h1 className='flex items-center text-sm text-white cursor-pointer'>
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 mr-2 h-5">
@@ -252,7 +255,7 @@ export default function Home() {
                     onChange={e => setPrompt(e.target.value)}
                     type='text'
                     placeholder='Mention your problem here'
-                    className='outline-none focus:outline-orange-500 ring-orange-400 focus:ring-orange-400 w-[35%] bg-white px-4 py-3 text-sm rounded-md border shadow-md text-black'
+                    className='outline-none focus:outline-orange-500 ring-orange-400 focus:ring-orange-400 w-[60%] lg:w-[35%] bg-white px-4 py-3 text-sm rounded-md border shadow-md text-black'
                   />
                   <button
                     onClick={() => handleSubmit()}
