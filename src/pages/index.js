@@ -10,8 +10,6 @@ import supabase from '../../supabase'
 import { toast } from 'react-hot-toast'
 import HistoryItem from '@/components/HistoryItem'
 
-const { Configuration, OpenAIApi } = require("openai")
-
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
@@ -19,18 +17,12 @@ export default function Home() {
   const { user } = useUser()
   const router = useRouter()
 
-  const configuration = new Configuration({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  })
-
   const loadingSFx = './loading-bgm.mp3'
 
   const [currentSound, setCurrentSound] = useState(null)
   const [audio, setAudio] = useState(null)
 
   const [play, { stop }] = useSound(loadingSFx,{interrupt: true, loop: true})
-
-  const openai = new OpenAIApi(configuration)
   
   const [prompt, setPrompt] = useState("");
   const [response, setResponse] = useState(null);
@@ -69,12 +61,14 @@ export default function Home() {
     play()
     try {
 
-      const result = await openai.createCompletion({
-        model: "text-davinci-003",
-        prompt: constructPrompt(),
-        temperature: 0.7,
-        max_tokens: 300,
-      })
+      const _res = await axios.post('/api/openai-completion',{ prompt: constructPrompt() })
+
+      const result = _res?.data || null
+
+      if (!result) {
+        toast.error('Something went wrong! Try again!')
+        return
+      }
       
       let temp_response = JSON.parse(result.data.choices[0].text.replace('Answer:','').replace(/\n/g,''))
       setResponse(temp_response)
