@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const allowedOrigins = ["http://localhost:3000"]
+const allowedOrigins = ["http://localhost:3000","https://talkno-justu.netlify.app"]
 
 export function middleware(request) {
     const origin = request.headers.get('origin')
