@@ -46,6 +46,8 @@ function HowItWorks() {
                 The (Talk-No Justu Tool) is built using <code>Next JS</code> specially for the <code>Supabase Launch Week 8 Hackathon</code>. The main focus of this tool is to receive any kind of problems aka "mental stress or anything you always wanted to shout at your friend" and process it using <code>Generative AI</code> - <code>Open AI</code> and provides you with a fun filled page of realistic anime voice using <code>Play HT</code> advising you with motivation or message. The thing to notice is due to empty pocket the entire site is running on free and open source resources and thus only two characters namely "Naruto Uzumaki" and "Gaara" are used.
             </p>
             <br/>
+            <iframe loading="lazy" className={'lg:h-80 h-60 mx-auto my-4 lg:w-1/2 w-full'} src="https://www.loom.com/embed/adc5a2ca1ddb448b9d96adfd2186174e?sid=1b710eac-08c9-4fa2-9efd-1c7045f421d3" frameBorder="0" allowFullScreen></iframe>
+            <br/>
             <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 <code>Supabase Authentication</code> is a great helper here, providing access to authenticate. Here I used, Authentication service to authenticate users and made sure only those you login will be able to access the tool and hear our naurto's no-talk jsutu.
             </p>

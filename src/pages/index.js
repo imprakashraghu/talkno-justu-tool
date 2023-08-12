@@ -270,7 +270,7 @@ export default function Home() {
                   </button>
                 </div>
               ) : (
-                <div className="w-[25%] flex items-center justify-center">
+                <div className="w-[90%] lg:w-[25%] flex items-center justify-center">
                   <Button
                     onClick={() => router.push('/login')}
                     type='small'
