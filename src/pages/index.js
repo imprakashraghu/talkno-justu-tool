@@ -67,6 +67,16 @@ export default function Home() {
 
       if (!result) {
         toast.error('Something went wrong! Try again!')
+        stop()
+        clearAndReset()
+        return
+      }
+
+      if (result.type === 'mock') {
+        stop()
+        setCurrentSound('https://qkxgulfkkmzherrvqskh.supabase.co/storage/v1/object/public/tts/KI4DJlBwE3spifD3gV.mp3')
+        setLoading(false)
+        setResponse({quote:'You know Open Ai key is not working for me at the moment because of too may requests! Even still I am responding too you!',character:'Naruto'})
         return
       }
       
