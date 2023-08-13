@@ -55,10 +55,13 @@ function HowItWorks() {
                 <code>Supabase Database & Storage</code> is used to save and relive the history and fall into naruto justu. Here all the voice files are stored as objects in supabase buckets and other data related to user like email, full name and motivational messages are stored into their postgresql databases.
             </p>
             <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
-                Not to mention, <code>Open AI</code> was a life saver providing me to generate qoutes or messages based on your problems described and character choosing via <code>text-davinci-003</code> mode. I made sure the result would defitely motivate you to atleast laugh 😅.
+                <code>Supabase Functions & Triggers</code> is used to trigger a function whenever user creates a new account it stores full name, email address to table called profiles in database to future references. This is happening through the user meta data properties.
             </p>
             <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
-                Talking about <code>Play HT</code> voice services, I used voice clonig to generate Naruto and Gaara's voice to speak motivation lines for you. Here while intergrating this it really made be stop sleeping as it was really difficult to do it, but everything at the end was worth it.
+                Not to mention, <code>Open AI</code> was a life saver providing me to generate qoutes or messages based on your problems described and character choosing via <code>text-davinci-003</code> mode. I made sure the result would definitely motivate you to atleast laugh 😅.
+            </p>
+            <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
+                Talking about <code>Play HT</code> voice services, I used voice clonig to generate Naruto and Gaara's voice to speak motivation lines for you. Here while intergrating this it really made me stop sleeping as it was really difficult to do it, but everything at the end was worth it.
             </p>
             <p className='w-full lg:w-[70%] mx-auto text-justify lg:text-center py-2 text-sm text-slate-400 leading-loose'>
                 <code>GIPHY</code> here, played a small role but a strong one. It generated a random anime character based on the situation and helped to create the current environement via their apis.
